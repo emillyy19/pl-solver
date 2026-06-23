@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solver PL — Montagem de Computadores · ENADE 2021</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-m:#378ADD;
+  --green:#3B6D11;--green-l:#EAF3DE;--green-m:#639922;
+  --amber:#BA7517;--amber-l:#FAEEDA;
+  --coral:#D85A30;--coral-l:#FAECE7;
+  --bg:#F7F6F3;--border:#E2E0D8;--muted:#5F5E5A;
+  --text:#1a1917;--white:#fff;
+  --r:10px;--rs:6px;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 48px}
+/* header */
+.hdr{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:2rem;margin:24px 0 0;display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem;flex-wrap:wrap}
+.hdr-badge{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--blue);background:var(--blue-l);padding:3px 10px;border-radius:4px;margin-bottom:8px;display:inline-block}
+.hdr h1{font-size:28px;font-weight:700;line-height:1.2}
+.hdr p{font-size:14px;color:var(--muted);margin-top:4px}
+.fac-cards{display:flex;gap:10px;flex-shrink:0}
+.fac{border-radius:var(--rs);padding:12px 16px;min-width:140px}
+.fac.m{background:var(--blue-l)}.fac.s{background:var(--green-l)}
+.fac-lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+.fac.m .fac-lbl{color:var(--blue)}.fac.s .fac-lbl{color:var(--green)}
+.fac-cost{font-size:18px;font-weight:700}.fac-cost small{font-size:12px;font-weight:400;color:var(--muted)}
+/* nav */
+.nav{display:flex;gap:4px;margin:12px 0 0;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:6px}
+.nav button{flex:1;padding:9px 8px;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--muted);border-radius:var(--rs);cursor:pointer;font-family:var(--sans);transition:all .15s}
+.nav button:hover{background:var(--bg);color:var(--text)}
+.nav button.act{background:var(--blue);color:#fff}
+/* main */
+.main{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:2rem;margin-top:8px;min-height:480px}
+/* panels */
+.panel{display:none}.panel.act{display:block}
+/* shared */
+.lbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin:0 0 10px}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:1.25rem;margin-bottom:1rem}
+.formula{font-family:var(--mono);font-size:15px;line-height:2.1}
+.x{color:var(--blue);font-weight:600}.y{color:var(--green);font-weight:600}.ineq{color:var(--muted)}
+.bdg{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-right:8px}
+.b-bl{background:var(--blue-l);color:var(--blue)}
+.b-gr{background:var(--green-l);color:var(--green)}
+.b-am{background:var(--amber-l);color:var(--amber)}
+.b-co{background:var(--coral-l);color:var(--coral)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;color:var(--muted);font-weight:700;font-size:11px;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+.btn-next{display:inline-flex;align-items:center;gap:6px;margin-top:1.5rem;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
+.btn-next:hover{opacity:.88}
+.btn-sec{background:var(--muted)}
+.ok-box{background:var(--green-l);border:1px solid #C0DD97;border-radius:var(--rs);padding:1.25rem;margin-bottom:1rem;color:var(--green)}
+.ok-box h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.ok-box p{font-size:14px;line-height:1.7}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0}
+.metric{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:14px 16px}
+.metric-lbl{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px}
+.metric-val{font-size:22px;font-weight:700;color:var(--text)}
+.metric-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.metric.acc .metric-val{color:var(--blue)}
+.ftr{text-align:center;font-size:12px;color:var(--muted);margin-top:24px}
+/* vértices solver */
+.vtx{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);cursor:pointer;transition:all .2s;margin-bottom:8px}
+.vtx:hover{border-color:var(--blue-m)}
+.vtx.revealed{cursor:default}
+.vtx.optimal{background:var(--green-l);border-color:#C0DD97}
+.vtx-badge{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--blue-l);color:var(--blue);font-weight:800;font-size:13px;flex-shrink:0}
+.vtx.optimal .vtx-badge{background:var(--green);color:#fff}
+.vtx-info{flex:1}
+.vtx-coord{font-family:var(--mono);font-size:13px;font-weight:600}
+.vtx-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.vtx-status{font-size:12px;font-weight:700;padding:3px 9px;border-radius:4px}
+.ok-tag{background:var(--green-l);color:var(--green)}
+.no-tag{background:var(--coral-l);color:var(--coral)}
+.vtx-cost{font-family:var(--mono);font-size:13px;font-weight:700;min-width:120px;text-align:right}
+.vtx-hint{font-size:12px;color:var(--blue);font-weight:600}
+/* result banner */
+.rbanner{background:linear-gradient(135deg,#EAF3DE,#E6F1FB);border:1px solid #C0DD97;border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center}
+.rbanner-left .rlbl{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--green);margin-bottom:4px}
+.rbanner-left .rval{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1.3}
+.rbanner-left .rsub{font-size:13px;color:var(--muted);margin-top:4px}
+.rbanner-right{margin-left:auto;text-align:right}
+.rbanner-right .rlbl{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.rbanner-right .rval{font-size:32px;font-weight:800;color:var(--blue);line-height:1.2}
+.rbanner-right .rsub{font-size:12px;color:var(--muted)}
+/* chart */
+.chart-wrap{position:relative;width:100%;height:360px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-bottom:1.5rem}
+.legend span{display:flex;align-items:center;gap:6px}
+.leg-line{width:20px;height:3px;border-radius:2px;display:inline-block}
+.leg-dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:2px solid #fff}
+@media(max-width:600px){.hdr{flex-direction:column}.rbanner{flex-direction:column}.rbanner-right{margin-left:0;text-align:left}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hdr">
+    <div>
+      <div class="hdr-badge">ENADE 2021 · Sistemas de Informação</div>
+      <h1>Programação Linear</h1>
+      <p>Minimização de custo — Montagem de Computadores</p>
+    </div>
+    <div class="fac-cards">
+      <div class="fac m"><span class="fac-lbl">Fábrica Manaus</span><span class="fac-cost">R$ 150.000 <small>/dia</small></span></div>
+      <div class="fac s"><span class="fac-lbl">Fábrica Sul</span><span class="fac-cost">R$ 210.000 <small>/dia</small></span></div>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <button class="act" onclick="showTab('modelagem')">① Modelagem</button>
+    <button onclick="showTab('solver')">② Solver</button>
+    <button onclick="showTab('grafico')">③ Gráfico</button>
+    <button onclick="showTab('solucao')">④ Solução Ótima</button>
+  </nav>
+
+  <main class="main">
+
+    <!-- MODELAGEM -->
+    <div id="t-modelagem" class="panel act">
+      <p class="lbl">Variáveis de decisão</p>
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--blue);min-width:24px">x</span>
+            <span style="font-size:14px">= dias de operação da fábrica de <strong style="color:var(--blue)">Manaus</strong></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);min-width:24px">y</span>
+            <span style="font-size:14px">= dias de operação da fábrica do <strong style="color:var(--green)">Sul</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <p class="lbl" style="margin-top:1.5rem">Função objetivo — minimizar custo total</p>
+      <div class="card" style="border-left:3px solid var(--blue)">
+        <div class="formula">Min Z = <span class="x">150.000x</span> + <span class="y">210.000y</span></div>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">Custo diário: Manaus R$ 150.000 · Sul R$ 210.000</p>
+      </div>
+
+      <p class="lbl" style="margin-top:1.5rem">Restrições de demanda mínima</p>
+      <div class="card">
+        <div style="margin-bottom:12px">
+          <span class="bdg b-bl">Desktop</span>
+          <span class="formula" style="display:inline">8.000<span class="x">x</span> + 2.000<span class="y">y</span> <span class="ineq">≥</span> 16.000</span>
+          <div style="font-size:12px;color:var(--muted);padding-left:72px;margin-top:2px">simplif.: <code style="font-family:var(--mono)">4x + y ≥ 8</code></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span class="bdg b-am">Notebook</span>
+          <span class="formula" style="display:inline">1.000<span class="x">x</span> + 1.000<span class="y">y</span> <span class="ineq">≥</span> 6.000</span>
+          <div style="font-size:12px;color:var(--muted);padding-left:72px;margin-top:2px">simplif.: <code style="font-family:var(--mono)">x + y ≥ 6</code></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span class="bdg b-gr">Netbook</span>
+          <span class="formula" style="display:inline">2.000<span class="x">x</span> + 7.000<span class="y">y</span> <span class="ineq">≥</span> 28.000</span>
+          <div style="font-size:12px;color:var(--muted);padding-left:72px;margin-top:2px">simplif.: <code style="font-family:var(--mono)">2x + 7y ≥ 28</code></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:12px">
+          <span class="formula"><span class="x">x</span> <span class="ineq">≥</span> 0 &nbsp;|&nbsp; <span class="y">y</span> <span class="ineq">≥</span> 0</span>
+          <span style="font-size:12px;color:var(--muted);margin-left:12px">não-negatividade</span>
+        </div>
+      </div>
+
+      <p class="lbl" style="margin-top:1.5rem">Tabela de dados</p>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Produto</th><th>Manaus (un/dia)</th><th>Sul (un/dia)</th><th>Demanda mínima</th></tr></thead>
+          <tbody>
+            <tr><td><span class="bdg b-bl">Desktop</span></td><td>8.000</td><td>2.000</td><td>16.000</td></tr>
+            <tr><td><span class="bdg b-am">Notebook</span></td><td>1.000</td><td>1.000</td><td>6.000</td></tr>
+            <tr><td><span class="bdg b-gr">Netbook</span></td><td>2.000</td><td>7.000</td><td>28.000</td></tr>
+            <tr style="background:var(--blue-l)">
+              <td style="color:var(--muted);font-size:12px;font-weight:700">CUSTO DIÁRIO</td>
+              <td style="font-weight:700;color:var(--blue)">R$ 150.000</td>
+              <td style="font-weight:700;color:var(--green)">R$ 210.000</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn-next" onclick="showTab('solver')">Ir para o Solver →</button>
+    </div>
+
+    <!-- SOLVER -->
+    <div id="t-solver" class="panel">
+      <p class="lbl">Método dos vértices — pontos extremos da região viável</p>
+      <div class="card">
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">O Teorema Fundamental da PL garante que a solução ótima ocorre em um vértice. Clique em cada ponto para avaliá-lo.</p>
+      </div>
+      <div id="vtx-list"></div>
+      <button class="btn-next btn-sec" onclick="solveAll()" style="margin-right:10px">▶ Resolver automaticamente</button>
+      <div id="solver-result"></div>
+      <button class="btn-next" onclick="showTab('grafico')" style="display:block;margin-top:1rem">Ver gráfico →</button>
+    </div>
+
+    <!-- GRÁFICO -->
+    <div id="t-grafico" class="panel">
+      <p class="lbl">Região viável e ponto ótimo</p>
+      <div class="card" style="padding:1rem">
+        <div class="chart-wrap"><canvas id="plChart" role="img" aria-label="Gráfico das restrições com ponto ótimo em x=2, y=4"></canvas></div>
+      </div>
+      <div class="legend">
+        <span><span class="leg-line" style="background:#378ADD"></span>Desktop: 4x+y=8</span>
+        <span><span class="leg-line" style="background:#BA7517"></span>Notebook: x+y=6</span>
+        <span><span class="leg-line" style="background:#639922"></span>Netbook: 2x+7y=28</span>
+        <span><span class="leg-dot" style="background:#D85A30;box-shadow:0 0 0 1px #D85A30"></span>Ponto ótimo (2,4)</span>
+        <span><span class="leg-dot" style="background:#888780;box-shadow:0 0 0 1px #888780"></span>Outros vértices</span>
+      </div>
+      <div class="card" style="border-left:3px solid var(--coral)">
+        <p style="font-size:13px;color:var(--muted);line-height:1.7">
+          A <strong style="color:var(--coral)">região viável</strong> é o conjunto de pontos que satisfazem todas as restrições simultaneamente.
+          O <strong>ponto ótimo ★ (2, 4)</strong> é o vértice de menor custo dentro dessa região.
+        </p>
+      </div>
+      <button class="btn-next" onclick="showTab('solucao')">Ver solução ótima →</button>
+    </div>
+
+    <!-- SOLUÇÃO -->
+    <div id="t-solucao" class="panel">
+      <div class="rbanner">
+        <div class="rbanner-left">
+          <div class="rlbl">✓ SOLUÇÃO ÓTIMA ENCONTRADA</div>
+          <div class="rval"><span style="color:var(--blue)">x = 2 dias</span> &nbsp;|&nbsp; <span style="color:var(--green)">y = 4 dias</span></div>
+          <div class="rsub">Manaus: 2 dias · Fábrica Sul: 4 dias</div>
+        </div>
+        <div class="rbanner-right">
+          <div class="rlbl">CUSTO MÍNIMO</div>
+          <div class="rval">R$ 1.140.000</div>
+          <div class="rsub">Z* = 150k×2 + 210k×4</div>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="metric-lbl">Custo Manaus</div><div class="metric-val">R$ 300k</div><div class="metric-sub">2 × R$ 150.000</div></div>
+        <div class="metric"><div class="metric-lbl">Custo Sul</div><div class="metric-val">R$ 840k</div><div class="metric-sub">4 × R$ 210.000</div></div>
+        <div class="metric acc"><div class="metric-lbl">Total mínimo</div><div class="metric-val">R$ 1,14M</div><div class="metric-sub">Valor ótimo Z*</div></div>
+      </div>
+
+      <p class="lbl" style="margin-top:1.5rem">Verificação das restrições</p>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Restrição</th><th>Cálculo com x=2, y=4</th><th>Exigência</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Desktop</strong></td><td style="font-family:var(--mono)">4×2 + 1×4 = 12</td><td style="font-family:var(--mono)">≥ 8</td><td><span class="bdg b-gr">✓ atendida</span></td></tr>
+            <tr><td><strong>Notebook</strong></td><td style="font-family:var(--mono)">2 + 4 = 6</td><td style="font-family:var(--mono)">≥ 6</td><td><span class="bdg b-gr">✓ atendida</span></td></tr>
+            <tr><td><strong>Netbook</strong></td><td style="font-family:var(--mono)">2×2 + 7×4 = 32</td><td style="font-family:var(--mono)">≥ 28</td><td><span class="bdg b-gr">✓ atendida</span></td></tr>
+            <tr><td><strong>Não-negat.</strong></td><td style="font-family:var(--mono)">x=2, y=4</td><td style="font-family:var(--mono)">≥ 0</td><td><span class="bdg b-gr">✓ atendida</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="lbl" style="margin-top:1.5rem">Produção total com x=2, y=4</p>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Produto</th><th>Manaus (×2 dias)</th><th>Sul (×4 dias)</th><th>Total</th><th>Demanda</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Desktop</strong></td><td>16.000</td><td>8.000</td><td><strong>24.000</strong></td><td>16.000</td><td><span class="bdg b-gr">✓</span></td></tr>
+            <tr><td><strong>Notebook</strong></td><td>2.000</td><td>4.000</td><td><strong>6.000</strong></td><td>6.000</td><td><span class="bdg b-gr">✓</span></td></tr>
+            <tr><td><strong>Netbook</strong></td><td>4.000</td><td>28.000</td><td><strong>32.000</strong></td><td>28.000</td><td><span class="bdg b-gr">✓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--blue);margin-top:1rem">
+        <p class="lbl">Interpretação</p>
+        <p style="font-size:14px;line-height:1.8">
+          Para atender a demanda de <strong>16 mil desktops</strong>, <strong>6 mil notebooks</strong> e <strong>28 mil netbooks</strong>
+          com o menor custo possível, a empresa deve operar a fábrica de
+          <strong style="color:var(--blue)">Manaus por 2 dias</strong> e a fábrica do
+          <strong style="color:var(--green)">Sul por 4 dias</strong>,
+          totalizando um custo mínimo de <strong style="color:var(--blue)">R$ 1.140.000,00</strong>.
+        </p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// Tab navigation
+function showTab(id) {
+  document.querySelectorAll('.nav button').forEach((b,i)=>{
+    b.classList.toggle('act',['modelagem','solver','grafico','solucao'][i]===id);
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('act'));
+  document.getElementById('t-'+id).classList.add('act');
+  if(id==='grafico') setTimeout(drawChart,50);
+}
+
+// Solver
+const CANDIDATES=[
+  {l:'A',x:0,  y:8, d:'Interseção x=0 com Desktop (4x+y=8)'},
+  {l:'B',x:0,  y:6, d:'Interseção x=0 com Notebook (x+y=6)'},
+  {l:'C',x:2,  y:4, d:'Interseção Notebook ∩ Netbook ← ÓTIMO'},
+  {l:'D',x:6,  y:0, d:'Interseção y=0 com Notebook (x+y=6)'},
+  {l:'E',x:14, y:0, d:'Interseção y=0 com Netbook (2x+7y=28)'},
+];
+const revealed=new Set();
+
+function feasible(x,y){ return 4*x+y>=8 && x+y>=6 && 2*x+7*y>=28 && x>=0 && y>=0; }
+function cost(x,y){ return 150000*x+210000*y; }
+function fmt(n){ return n.toLocaleString('pt-BR'); }
+
+function optimal(){
+  const f=CANDIDATES.filter(c=>feasible(c.x,c.y));
+  return f.reduce((b,c)=>cost(c.x,c.y)<cost(b.x,b.y)?c:b, f[0]);
+}
+
+function renderVtx(){
+  const opt=optimal();
+  document.getElementById('vtx-list').innerHTML=CANDIDATES.map(c=>{
+    const rev=revealed.has(c.l);
+    const feas=feasible(c.x,c.y);
+    const isOpt=c.l===opt.l;
+    const z=cost(c.x,c.y);
+    return `<div class="vtx${rev?' revealed':''}${rev&&isOpt?' optimal':''}" onclick="revealVtx('${c.l}')">
+      <div class="vtx-badge">${c.l}</div>
+      <div class="vtx-info">
+        <div class="vtx-coord">x = ${c.x}, y = ${c.y}</div>
+        <div class="vtx-desc">${c.d}</div>
+      </div>
+      ${rev
+        ? `<span class="vtx-status ${feas?'ok-tag':'no-tag'}">${feas?'✓ viável':'✗ inviável'}</span>
+           ${feas?`<span class="vtx-cost" style="color:${isOpt?'var(--green)':'var(--text)'}">R$ ${fmt(z)}${isOpt?' ⭐':''}</span>`:''}`
+        : `<span class="vtx-hint">clique para avaliar →</span>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function revealVtx(l){
+  revealed.add(l);
+  renderVtx();
+}
+
+function solveAll(){
+  CANDIDATES.forEach(c=>revealed.add(c.l));
+  renderVtx();
+  const opt=optimal();
+  document.getElementById('solver-result').innerHTML=`
+    <div class="ok-box" style="margin-top:1rem">
+      <h3>✓ Solução encontrada — Ponto ${opt.l}</h3>
+      <p><strong>x = ${opt.x} dias</strong> (Manaus) &nbsp;|&nbsp; <strong>y = ${opt.y} dias</strong> (Sul)<br>
+      Custo mínimo: <strong>Z* = R$ ${fmt(cost(opt.x,opt.y))}</strong></p>
+    </div>`;
+}
+
+renderVtx();
+
+// Chart
+let chartInst=null;
+function drawChart(){
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const ctx=document.getElementById('plChart');
+  if(!ctx) return;
+  const xs=Array.from({length:17},(_,i)=>i);
+  chartInst=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:xs,
+      datasets:[
+        {label:'Desktop',data:xs.map(x=>({x,y:8-4*x})),borderColor:'#378ADD',borderWidth:2.5,pointRadius:0,fill:false,tension:0},
+        {label:'Notebook',data:xs.map(x=>({x,y:6-x})),borderColor:'#BA7517',borderWidth:2.5,pointRadius:0,fill:false,tension:0},
+        {label:'Netbook',data:xs.map(x=>({x,y:(28-2*x)/7})),borderColor:'#639922',borderWidth:2.5,pointRadius:0,fill:false,tension:0},
+        {label:'Ótimo',data:[{x:2,y:4}],type:'scatter',pointRadius:11,pointHoverRadius:13,pointBackgroundColor:'#D85A30',pointBorderColor:'#fff',pointBorderWidth:3,showLine:false},
+        {label:'Vértices',data:[{x:0,y:8},{x:6,y:0},{x:14,y:0}],type:'scatter',pointRadius:7,pointBackgroundColor:'#888780',pointBorderColor:'#fff',pointBorderWidth:2,showLine:false},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,parsing:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>{
+        if(c.datasetIndex===3) return '★ Ótimo: x=2, y=4 → Z=R$1.140.000';
+        return `x=${c.parsed.x.toFixed(1)}, y=${c.parsed.y.toFixed(1)}`;
+      }}}},
+      scales:{
+        x:{type:'linear',min:-0.5,max:16,title:{display:true,text:'x — dias Manaus',color:'#5F5E5A',font:{size:12}},grid:{color:'rgba(0,0,0,0.06)'},ticks:{stepSize:2}},
+        y:{type:'linear',min:-0.5,max:10,title:{display:true,text:'y — dias Sul',color:'#5F5E5A',font:{size:12}},grid:{color:'rgba(0,0,0,0.06)'},ticks:{stepSize:1}},
+      },
+    }
+  });
+}
+</script>
+</body>
+</html>
