@@ -3,20 +3,19 @@
   "version": "1.0.0",
   "description": "Solver de Programação Linear — ENADE 2021 Sistemas de Informação",
   "type": "module",
- "scripts": {
-  "dev": "vite",
-  "build": "./node_modules/.bin/vite build",
-  "preview": "vite preview"
-},
-
+  "scripts": {
+    "dev": "vite",
+    "build": "./node_modules/.bin/vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "chart.js": "^4.4.1",
-    "react-chartjs-2": "^5.2.0"
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.0.0"
+    "vite": "^8.1.0"
   }
 }
